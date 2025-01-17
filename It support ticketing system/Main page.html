@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Ticket</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .form-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .form-container h2 {
+            text-align: center;
+        }
+        .form-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .form-container input, .form-container textarea, .form-container select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .form-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background-color: #218838;
+        }
+        .message {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Create Ticket</h2>
+        <form id="ticketForm">
+            <!-- Customer Name -->
+            <label for="customer_name">Customer Name</label>
+            <input type="text" id="customer_name" name="customer_name" placeholder="Enter your name" required>
+
+            <!-- Issue Description -->
+            <label for="issue_description">Issue Description</label>
+            <textarea id="issue_description" name="issue_description" rows="4" placeholder="Describe your issue" required></textarea>
+
+            <!-- Urgency -->
+            <label for="urgency">Urgency</label>
+            <select id="urgency" name="urgency" required>
+                <option value="">Select urgency</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+            </select>
+
+            <!-- Department -->
+            <label for="department">Department</label>
+            <select id="department" name="department" required>
+                <option value="">Select department</option>
+                <option value="Network">IT Networking</option>
+                <option value="Software">IT Software</option>
+                <option value="Hardware">IT Hardware</option>
+                <option value="Support">IT Support</option>
+            </select>
+
+            <button type="button" onclick="createTicket()">Submit Ticket</button>
+        </form>
+        <div class="message" id="message"></div>
+    </div>
+
+    <script>
+        async function createTicket() {
+            const customer_name = document.getElementById('customer_name').value.trim();
+            const issue_description = document.getElementById('issue_description').value.trim();
+            const urgency = document.getElementById('urgency').value;
+            const department = document.getElementById('department').value;
+
+            const messageDiv = document.getElementById('message');
+
+            // Input validation
+            if (!customer_name || !issue_description || !urgency || !department) {
+                messageDiv.textContent = "All fields are required!";
+                messageDiv.style.color = 'red';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5000/tickets', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ customer_name, issue_description, urgency, department })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    messageDiv.textContent = `Ticket created successfully with ID: ${data.id}`;
+                    messageDiv.style.color = 'green';
+
+                    // Clear form fields
+                    document.getElementById('ticketForm').reset();
+                } else {
+                    const errorData = await response.json();
+                    messageDiv.textContent = `Error: ${errorData.error}`;
+                    messageDiv.style.color = 'red';
+                }
+            } catch (error) {
+                console.error("Error creating ticket:", error);
+                messageDiv.textContent = `Error: ${error.message}`;
+                messageDiv.style.color = 'red';
+            }
+        }
+    </script>
+</body>
+</html>
